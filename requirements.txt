@@ -7,4 +7,5 @@ roboflow==1.1.51
 supervision==0.25.1
 torch==2.2.0
 transformers==4.46.3
-ultralytics==8.3.67
+ultralytics==8.3.67pyyaml
+pytest
