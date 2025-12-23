@@ -1,6 +1,9 @@
 import os
 import argparse
+import logging
+import sys
 from utils import read_video, save_video
+from utils.config_manager import ConfigManager
 from trackers import PlayerTracker, BallTracker
 from team_assigner import TeamAssigner
 from court_keypoint_detector import CourtKeypointDetector
@@ -18,47 +21,60 @@ from drawers import (
     TacticalViewDrawer,
     SpeedAndDistanceDrawer
 )
-from configs import(
-    STUBS_DEFAULT_PATH,
-    PLAYER_DETECTOR_PATH,
-    BALL_DETECTOR_PATH,
-    COURT_KEYPOINT_DETECTOR_PATH,
-    OUTPUT_VIDEO_PATH
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
 )
+logger = logging.getLogger(__name__)
 
 def parse_args():
+    # Load default config to get default paths
+    config = ConfigManager().config
+
     parser = argparse.ArgumentParser(description='Basketball Video Analysis')
     parser.add_argument('input_video', type=str, help='Path to input video file')
-    parser.add_argument('--output_video', type=str, default=OUTPUT_VIDEO_PATH, 
+    parser.add_argument('--output_video', type=str, default=config.get('output_video_path', 'output_videos/output_video.avi'),
                         help='Path to output video file')
-    parser.add_argument('--stub_path', type=str, default=STUBS_DEFAULT_PATH,
+    parser.add_argument('--stub_path', type=str, default=config.get('stubs_default_path', 'stubs'),
                         help='Path to stub directory')
     return parser.parse_args()
 
 def main():
     args = parse_args()
+    config = ConfigManager()
+
+    logger.info(f"Starting analysis for video: {args.input_video}")
     
     # Read Video
     video_frames = read_video(args.input_video)
     
     ## Initialize Tracker
-    player_tracker = PlayerTracker(PLAYER_DETECTOR_PATH)
-    ball_tracker = BallTracker(BALL_DETECTOR_PATH)
+    logger.info("Initializing trackers...")
+    player_tracker = PlayerTracker(config.get('player_detector_path'))
+    ball_tracker = BallTracker(config.get('ball_detector_path'))
 
     ## Initialize Keypoint Detector
-    court_keypoint_detector = CourtKeypointDetector(COURT_KEYPOINT_DETECTOR_PATH)
+    court_keypoint_detector = CourtKeypointDetector(config.get('court_keypoint_detector_path'))
 
     # Run Detectors
+    logger.info("Running player tracker...")
     player_tracks = player_tracker.get_object_tracks(video_frames,
                                        read_from_stub=True,
                                        stub_path=os.path.join(args.stub_path, 'player_track_stubs.pkl')
                                       )
     
+    logger.info("Running ball tracker...")
     ball_tracks = ball_tracker.get_object_tracks(video_frames,
                                                  read_from_stub=True,
                                                  stub_path=os.path.join(args.stub_path, 'ball_track_stubs.pkl')
                                                 )
     ## Run KeyPoint Extractor
+    logger.info("Extracting court keypoints...")
     court_keypoints_per_frame = court_keypoint_detector.get_court_keypoints(video_frames,
                                                                     read_from_stub=True,
                                                                     stub_path=os.path.join(args.stub_path, 'court_key_points_stub.pkl')
@@ -71,6 +87,7 @@ def main():
    
 
     # Assign Player Teams
+    logger.info("Assigning player teams...")
     team_assigner = TeamAssigner()
     player_assignment = team_assigner.get_player_teams_across_frames(video_frames,
                                                                     player_tracks,
@@ -79,15 +96,18 @@ def main():
                                                                     )
 
     # Ball Acquisition
+    logger.info("Detecting ball possession...")
     ball_aquisition_detector = BallAquisitionDetector()
     ball_aquisition = ball_aquisition_detector.detect_ball_possession(player_tracks,ball_tracks)
 
     # Detect Passes
+    logger.info("Detecting passes and interceptions...")
     pass_and_interception_detector = PassAndInterceptionDetector()
     passes = pass_and_interception_detector.detect_passes(ball_aquisition,player_assignment)
     interceptions = pass_and_interception_detector.detect_interceptions(ball_aquisition,player_assignment)
 
     # Tactical View
+    logger.info("Generating tactical view...")
     tactical_view_converter = TacticalViewConverter(
         court_image_path="./images/basketball_court.png"
     )
@@ -96,6 +116,7 @@ def main():
     tactical_player_positions = tactical_view_converter.transform_players_to_tactical_view(court_keypoints_per_frame,player_tracks)
 
     # Speed and Distance Calculator
+    logger.info("Calculating speed and distance...")
     speed_and_distance_calculator = SpeedAndDistanceCalculator(
         tactical_view_converter.width,
         tactical_view_converter.height,
@@ -106,6 +127,7 @@ def main():
     player_speed_per_frame = speed_and_distance_calculator.calculate_speed(player_distances_per_frame)
 
     # Draw output   
+    logger.info("Drawing output video...")
     # Initialize Drawers
     player_tracks_drawer = PlayerTracksDrawer()
     ball_tracks_drawer = BallTracksDrawer()
@@ -159,7 +181,7 @@ def main():
 
     # Save video
     save_video(output_video_frames, args.output_video)
+    logger.info(f"Video saved to {args.output_video}")
 
 if __name__ == '__main__':
     main()
-    
