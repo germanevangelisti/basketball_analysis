@@ -22,6 +22,7 @@ from drawers import (
     PassInterceptionDrawer,
     TacticalViewDrawer,
     SpeedAndDistanceDrawer,
+    StatsHudDrawer,
 )
 
 logging.basicConfig(
@@ -133,7 +134,7 @@ def _drawing_pass(reader, player_tracks, player_assignment, results,
                   tactical_converter, drawers, output_path):
     """Stream video a second time, draw overlays chunk by chunk, write to output."""
     (player_tracks_drawer, ball_tracks_drawer, court_keypoint_drawer,
-     team_ball_control_drawer, frame_number_drawer, pass_interceptions_drawer,
+     frame_number_drawer, stats_hud_drawer,
      tactical_view_drawer, speed_and_distance_drawer) = drawers
 
     writer = VideoWriter(output_path, fps=24, width=reader.width, height=reader.height)
@@ -149,11 +150,9 @@ def _drawing_pass(reader, player_tracks, player_assignment, results,
         out = ball_tracks_drawer.draw(out, results['ball_tracks'][s])
         out = court_keypoint_drawer.draw(out, results['court_keypoints'][s])
         out = frame_number_drawer.draw(out, start_frame_idx=start_idx)
-        out = team_ball_control_drawer.draw(
-            out, player_assignment[s], results['ball_acquisition'][s]
-        )
-        out = pass_interceptions_drawer.draw(
-            out, results['passes'][s], results['interceptions'][s]
+        out = stats_hud_drawer.draw(
+            out, player_assignment[s], results['ball_acquisition'][s],
+            results['passes'][s], results['interceptions'][s]
         )
         out = speed_and_distance_drawer.draw(
             out, player_tracks[s], results['distances'][s], results['speeds'][s]
@@ -228,9 +227,8 @@ def main():
         PlayerTracksDrawer(),
         BallTracksDrawer(),
         CourtKeypointDrawer(),
-        TeamBallControlDrawer(),
         FrameNumberDrawer(),
-        PassInterceptionDrawer(),
+        StatsHudDrawer(),
         TacticalViewDrawer(),
         SpeedAndDistanceDrawer(),
     )
