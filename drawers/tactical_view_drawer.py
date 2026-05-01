@@ -1,15 +1,16 @@
 import cv2 
 
 class TacticalViewDrawer:
-    def __init__(self, team_1_color=[255, 245, 238], team_2_color=[128, 0, 0]):
+    def __init__(self, team_1_color=[40, 100, 220], team_2_color=[0, 50, 220], position='top-right'):
+        self.position = position
         self.start_x = 20
-        self.start_y = 40
+        self.start_y = 20
         self.team_1_color = team_1_color
         self.team_2_color = team_2_color
 
-    def draw(self, 
-             video_frames, 
-             court_image_path, 
+    def draw(self,
+             video_frames,
+             court_image_path,
              width,
              height,
              tactical_court_keypoints,
@@ -18,23 +19,31 @@ class TacticalViewDrawer:
              ball_acquisition=None):
         """
         Draw tactical view with court keypoints and player positions.
-        
+
         Args:
             video_frames (list): List of video frames to draw on.
             court_image_path (str): Path to the court image.
             width (int): Width of the tactical view.
             height (int): Height of the tactical view.
             tactical_court_keypoints (list): List of court keypoints in tactical view.
-            tactical_player_positions (list, optional): List of dictionaries mapping player IDs to 
+            tactical_player_positions (list, optional): List of dictionaries mapping player IDs to
                 their positions in tactical view coordinates.
             player_assignment (list, optional): List of dictionaries mapping player IDs to team assignments.
             ball_acquisition (list, optional): List indicating which player has the ball in each frame.
-            
+
         Returns:
             list: List of frames with tactical view drawn on them.
         """
         court_image = cv2.imread(court_image_path)
         court_image = cv2.resize(court_image, (width, height))
+
+        # Compute start_x based on position
+        if video_frames:
+            frame_h, frame_w = video_frames[0].shape[:2]
+            if self.position == 'top-right':
+                self.start_x = frame_w - width - 20
+            else:
+                self.start_x = 20
 
         output_video_frames = []
         for frame_idx, frame in enumerate(video_frames):

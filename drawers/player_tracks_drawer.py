@@ -9,7 +9,7 @@ class PlayerTracksDrawer:
         team_1_color (list): RGB color used to represent Team 1 players.
         team_2_color (list): RGB color used to represent Team 2 players.
     """
-    def __init__(self,team_1_color=[255, 245, 238],team_2_color=[128, 0, 0]):
+    def __init__(self,team_1_color=[40, 100, 220],team_2_color=[0, 50, 220]):
         """
         Initialize the PlayerTracksDrawer with specified team colors.
 
