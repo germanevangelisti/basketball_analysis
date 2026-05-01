@@ -1,12 +1,13 @@
 # Default Paths
 stubs_default_path: 'stubs'
-output_video_path: 'output_videos/output_video.avi'
+output_video_path: 'output_videos/output_video.mp4'
 
 # Model Paths
 player_detector_path: 'models/player_detector.pt'
 ball_detector_path: 'models/ball_detector_model.pt'
 court_keypoint_detector_path: 'models/court_keypoint_detector.pt'
 
-# Processing Settings (To be used later)
+# Processing Settings
 batch_size: 20
 confidence_threshold: 0.5
+chunk_size: 200
