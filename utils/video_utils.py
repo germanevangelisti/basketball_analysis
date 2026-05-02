@@ -65,7 +65,7 @@ class VideoWriter:
         if output_dir:
             os.makedirs(output_dir, exist_ok=True)
         ext = os.path.splitext(output_path)[1].lower()
-        fourcc = cv2.VideoWriter_fourcc(*('avc1' if ext == '.mp4' else 'XVID'))
+        fourcc = cv2.VideoWriter_fourcc(*('mp4v' if ext == '.mp4' else 'XVID'))
         self._writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
     def write_chunk(self, frames):

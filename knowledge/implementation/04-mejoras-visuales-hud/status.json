@@ -1,0 +1,11 @@
+{
+  "feature_slug": "04-mejoras-visuales-hud",
+  "feature_name": "Mejoras Visuales — HUD y Overlays",
+  "kb_doc": "knowledge/04_mejoras_visuales_hud.md",
+  "branch": "feature/04-mejoras-visuales-hud",
+  "status": "done",
+  "started_at": "2026-05-01T00:00:00Z",
+  "last_updated": "2026-05-02T18:30:00Z",
+  "dod_total": 34,
+  "dod_passing": 34
+}

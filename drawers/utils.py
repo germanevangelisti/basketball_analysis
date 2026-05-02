@@ -82,14 +82,19 @@ def draw_ellipse(frame,bbox,color,track_id=None):
         x1_text = x1_rect+12
         if track_id > 99:
             x1_text -=10
-        
+
+        # Dynamic text color based on background luminance
+        r, g, b = color[2], color[1], color[0]  # BGR → RGB
+        luminance = 0.299*r + 0.587*g + 0.114*b
+        text_color = (0, 0, 0) if luminance > 128 else (255, 255, 255)
+
         cv2.putText(
             frame,
             f"{track_id}",
             (int(x1_text),int(y1_rect+15)),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.6,
-            (0,0,0),
+            text_color,
             2
         )
 
