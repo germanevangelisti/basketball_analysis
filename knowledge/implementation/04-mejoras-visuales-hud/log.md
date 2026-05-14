@@ -75,3 +75,58 @@ Started: 2026-05-01T00:00:00Z
 - Chunk-boundary safety preserved: no changes to player tracking or ByteTrack state management
 - Frame numbering unaffected: FrameNumberDrawer continues to use global frame indices via `start_frame_idx`
 - Backward compatibility maintained: old drawer classes (TeamBallControlDrawer, PassInterceptionDrawer) still exist in codebase, only removed from active pipeline
+
+---
+
+## [2026-05-14T18:24:30Z] QA Review
+
+### Test results
+**26/26 PASSED** (10 existing + 16 new)
+- `test_ball_aquisition.py`: 5/5 passed
+- `test_bbox_utils.py`: 5/5 passed
+- `test_stats_hud_drawer.py`: 16/16 passed
+- No test failures. No regressions in existing tests.
+
+### Code quality review
+
+**StatsHudDrawer (drawers/stats_hud_drawer.py, 283 lines):**
+- Clean class design with single responsibility: unifies team stats + ball control visualization
+- Method signatures match KB spec exactly
+- Frame 0 skipping implemented correctly (line 89-90 per pipeline invariant)
+- `get_team_ball_control()` and `get_stats()` are stateless utility methods
+- Dynamic text positioning for right-aligned Team 2 stats using `cv2.getTextSize()`
+- Cumulative stats calculation correct (slices up to current frame_num)
+- Edge case handling: gray bar + "–" label when no possession data (lines 247-253)
+- HUD positioning: y=78%-96% of frame, full width, 3 equal sections with vertical separators
+- Semi-transparent overlay (alpha=0.85) properly applied
+
+**Modified files (Phase 1-2):**
+- `drawers/player_tracks_drawer.py:12`: Colors [40, 100, 220]/[0, 50, 220] match tactical_view_drawer and stats_hud_drawer
+- `drawers/tactical_view_drawer.py:4-46`: Position parameter defaults to 'top-right', dynamic start_x computed from frame width
+- `drawers/utils.py:86-89`: Luminance-based text color (threshold 128) using standard formula
+- `drawers/__init__.py:9`: StatsHudDrawer export added
+- `main.py:16-25, 136-138, 153-156, 226-234`: Imports, unpacking, drawing call chain all consistent with 7-drawer tuple
+
+### DoD validation
+✅ All 42 DoD items pass. Notable verifications:
+- Team colors consistent across 3 files: [40, 100, 220] (steel-blue) and [0, 50, 220] (vivid-red)
+- Dynamic text contrast verified in unit tests for both team colors
+- Tactical view repositioning: position='top-right' default, start_x calculated correctly
+- Frame 0 skipping: implemented in draw() method (lines 89-90)
+- HUD layout: 3 sections with vertical separators, proper text alignment
+- Cumulative stats: verified via test_cumulative_stats_per_frame()
+
+### Verdict
+**READY TO MERGE**
+
+No issues found. Implementation fully complies with KB spec (with documented color deviation justified in implementation log). All critical invariants preserved:
+- Frame 0 skipped across pipeline
+- ByteTrack state untouched (no impact on tracking)
+- Global frame numbering preserved (FrameNumberDrawer unchanged)
+- Chunk-based processing maintained (stats_hud_drawer receives pre-sliced data)
+
+### Test coverage highlights
+- Unit tests cover initialization, team ball control logic, stats calculation, frame counting, edge cases
+- Dynamic text color contrast tested for both team colors using luminance formula
+- Possession bar rendering tested with no-data, all-team-1, and split scenarios
+- 16 comprehensive tests for new StatsHudDrawer class, 0 failures

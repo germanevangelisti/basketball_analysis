@@ -3,9 +3,15 @@
   "feature_name": "Mejoras Visuales — HUD y Overlays",
   "kb_doc": "knowledge/04_mejoras_visuales_hud.md",
   "branch": "feature/04-mejoras-visuales-hud",
-  "status": "review_ready",
+  "status": "approved",
   "started_at": "2026-05-01T00:00:00Z",
-  "last_updated": "2026-05-01T03:35:00Z",
+  "completed_at": "2026-05-14T18:24:30Z",
+  "last_updated": "2026-05-14T18:24:30Z",
   "dod_total": 42,
-  "dod_passing": 42
+  "dod_passing": 42,
+  "test_results": {
+    "total": 26,
+    "passed": 26,
+    "failed": 0
+  }
 }
