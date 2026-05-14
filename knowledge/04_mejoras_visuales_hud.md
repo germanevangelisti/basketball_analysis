@@ -1,6 +1,6 @@
 # Mejoras Visuales — HUD y Overlays
 
-> **Status:** IMPLEMENTED — 2026-05-02 | Branch: feature/04-mejoras-visuales-hud
+> **Status:** IMPLEMENTED — 2026-05-14 | Branch: feature/04-mejoras-visuales-hud
 
 *Fecha: 2026-05-01 | Origen: análisis de output de video_1.mp4*
 
